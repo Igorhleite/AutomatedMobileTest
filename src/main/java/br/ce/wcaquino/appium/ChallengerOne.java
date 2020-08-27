@@ -1,12 +1,16 @@
 package br.ce.wcaquino.appium;
+import br.ce.wcaquino.appium.core.DSL;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.events.EventFiringWebDriverFactory;
 import io.appium.java_client.remote.MobileCapabilityType;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
+import br.ce.wcaquino.appium.core.DiverFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -14,25 +18,31 @@ import java.util.concurrent.TimeUnit;
 
 public class ChallengerOne {
 
-    @Test
-    public void FullForms() throws MalformedURLException {
-        DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-        desiredCapabilities.setCapability("platformName", "Android");
-        desiredCapabilities.setCapability("deviceName", "emulator-5554");
-        desiredCapabilities.setCapability("automationName", "uiautomator2");
-        // desiredCapabilities.setCapability("appPackage", "com.tricolorcat.calculator");
-        // desiredCapabilities.setCapability("appActivity", "com.tricolorcat.calculator.MainActivity");
-        desiredCapabilities.setCapability(MobileCapabilityType.APP, "C:\\Users\\igor\\IdeaProjects\\CursoAppium\\src\\main\\resources\\CTAppium_1_2.apk");
+    private AndroidDriver<MobileElement> driver;
 
+    private DSL dsl = new DSL();
 
-        AndroidDriver<MobileElement> driver = new AndroidDriver(new URL("http://localhost:4723/wd/hub"), desiredCapabilities);
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    @Before
+    public void getMobileElementAndroidDriver() throws MalformedURLException {
+       driver = DiverFactory.getDriver();
 
-        // Find and enter "Formulario"
+        //Find "Formulario" and click
         driver.findElement(By.xpath("//android.widget.TextView[@text='Formulário']")).click();
 
+    }
+
+    @After
+    public void turnOff() {
+        DiverFactory.killDriver();
+    }
+
+
+    @Test
+    public void FullForms() throws MalformedURLException {
+
         // Just verify about render of elements on screen
-        MobileElement Text = driver.findElement(By.className("android.widget.EditText"));
+        dsl.write(By.className("android.widget.EditText"), "Igor" );
+
 
         MobileElement Selection = driver.findElement(By.className("android.widget.Spinner"));
 
@@ -45,7 +55,6 @@ public class ChallengerOne {
         MobileElement SaveButton = driver.findElement(By.xpath("//android.widget.TextView[@text='SALVAR']"));
 
         //Actions
-        Text.sendKeys("Igor");
 
         Selection.click();
         driver.findElement(By.xpath("//android.widget.CheckedTextView[@text='PS4']")).click();
@@ -57,7 +66,7 @@ public class ChallengerOne {
         SaveButton.click();
 
         //Verify
-        String ImputedText = driver.findElement(By.xpath("//android.widget.TextView[@text='Nome: Igor']")).getText();
+        String ImputedText = dsl.findText(By.xpath("//android.widget.TextView[@text='Nome: Igor']"));
         Assert.assertEquals("Nome: Igor", ImputedText);
 
         String Console = driver.findElement(By.xpath("//android.widget.TextView[starts-with(@text, 'Console:')]")).getText();
@@ -70,7 +79,7 @@ public class ChallengerOne {
         Assert.assertEquals("Checkbox: Marcado", checkStatus);
 
 
-        driver.quit();
+
     }
 }
 
